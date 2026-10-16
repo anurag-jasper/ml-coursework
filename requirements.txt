@@ -1,3 +1,8 @@
 numpy
 matplotlib
 notebook
+ultralytics
+opencv-python
+pandas
+pyyaml
+torch

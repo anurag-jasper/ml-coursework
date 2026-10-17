@@ -8,8 +8,9 @@ Notebooks from my M.Tech (AI & ML) coursework at IIT Jodhpur.
 |---|---|---|
 | [`M26AI1023_FoVL_Individual_Project_CV.ipynb`](M26AI1023_FoVL_Individual_Project_CV.ipynb) | Foundations of Vision & Language | Measures how Gaussian blur and unsharp-mask sharpening affect YOLO11n detection accuracy on COCO128 |
 | [`flowers.ipynb`](flowers.ipynb) | Foundations of Vision & Language | A two-input neuron built from scratch in NumPy, trained with hand-derived gradients |
+| [`word2vec.ipynb`](word2vec.ipynb) | Foundations of Vision & Language | Skip-gram word embeddings trained from scratch on a five-sentence corpus |
 
-Both notebooks are committed with all cells executed and outputs intact.
+Every notebook is committed with all cells executed and outputs intact.
 
 ```bash
 python3 -m venv .venv
@@ -112,3 +113,45 @@ The last cell sweeps the whole x/y plane through the trained network, drawing
 the decision boundary as a clean diagonal split with every training point on the
 correct side. Training is randomly initialised, so the exact prediction shifts a
 little run to run — it lands around 0.99 either way.
+
+---
+
+## Word2Vec — skip-gram from scratch
+
+Skip-gram word embeddings, implemented in NumPy with no autograd and no
+`gensim`, trained on a five-sentence corpus about cats, dogs, milk and balls.
+From the Word2Vec session.
+
+| | |
+|---|---|
+| Corpus | 5 sentences, 7-word vocabulary |
+| Pairs | 20 center/context pairs, window = 1 |
+| Model | `E` (7×3 embeddings) → `W` (3×7 output), softmax over the vocabulary |
+| Training | 500 epochs of SGD, learning rate 0.05, cross-entropy loss |
+
+The forward pass looks up the center word's row of `E`, projects it through `W`
+and softmaxes; the backward pass is the standard skip-gram gradient written out
+directly:
+
+```
+error        = softmax(scores);  error[context] -= 1
+gradient_W   = outer(h, error)
+gradient_h   = W @ error
+```
+
+### What it learns
+
+With `np.random.seed(42)` the run is reproducible, and this copy matches the
+embeddings in the notebook as shared in class:
+
+```
+Words similar to cats: milk (0.577), dogs (0.483), balls (0.417)
+Words similar to dogs: balls (0.634), cats (0.483), milk (0.345)
+```
+
+The corpus is tiny and deliberately so: `cats` lands nearest `milk` and `dogs`
+nearest `balls`, which is exactly the co-occurrence structure the five sentences
+encode. `cats` and `dogs` also end up moderately similar to each other (0.483)
+despite never co-occurring — they share the contexts `like`, `chase` and `milk`,
+which is the distributional hypothesis doing its job on a corpus small enough to
+check by hand.
